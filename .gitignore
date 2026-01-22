@@ -205,3 +205,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Node.js (ADD THIS)
+node_modules/
+npm-debug.log
+
+# Project specific
+shared-volume/
+*.log

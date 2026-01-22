@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # =========================================
+  # INFRASTRUCTURE: The Shared Database
+  # =========================================
+  db:
+    image: postgres:13-alpine
+    container_name: production_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: platform_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - platform_network
+
+  # =========================================
+  # ZONE 1: THE "PROBLEM" LAYER (Failing Apps)
+  # =========================================
+
+  # Service A: The Crasher (Availability Issues)
+  payment-service:
+    build: 
+      context: ./services/payment-service
+    container_name: prod_payment_service
+    ports:
+      - "8080:8080"
+    volumes:
+      # Writes logs to "shared-logs" so your Local Log Analyst can see them
+      - ./shared-logs:/app/shared-logs
+    networks:
+      - platform_network
+    depends_on:
+      - db
+
+  # Service B: The Slowpoke (Latency Issues)
+  inventory-service:
+    build: 
+      context: ./services/inventory-service
+    container_name: prod_inventory_service
+    ports:
+      - "8081:8080" # Maps port 8080 inside to 8081 outside
+    volumes:
+      - ./shared-logs:/app/shared-logs
+    environment:
+      - DB_HOST=db
+      - DB_PASS=password123
+    networks:
+      - platform_network
+    depends_on:
+      - db
+
+  # Service C: The Rejector (Config Issues)
+  auth-service:
+    build: 
+      context: ./services/auth-service
+    container_name: prod_auth_service
+    ports:
+      - "8082:8080" # Maps port 8080 inside to 8082 outside
+    volumes:
+      - ./shared-logs:/app/shared-logs
+    networks:
+      - platform_network
+
+volumes:
+  db_data:
+
+networks:
+  platform_network:
+    driver: bridge
