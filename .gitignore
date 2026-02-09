@@ -216,3 +216,5 @@ shared-volume/
 *.log
 
 .env
+__pycache__/
+*.pyc

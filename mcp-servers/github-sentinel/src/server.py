@@ -1,22 +1,22 @@
 from mcp.server.fastmcp import FastMCP
 import requests
 import os
-import json
 from dotenv import load_dotenv
 
+# 1. Load environment variables from the .env file
 load_dotenv()
 
 # Initialize
 mcp = FastMCP("GitHub Sentinel")
 
-# CONFIGURATION
-# You need to set this env var, or hardcode it for testing (NOT recommended for prod)
-github_token = os.getenv("GITHUB_TOKEN")
+# 2. Get variables safely
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+REPO_OWNER = os.getenv("REPO_OWNER")
+REPO_NAME = os.getenv("REPO_NAME")
 
-if not github_token:
-    print("Error: GITHUB_TOKEN not found in environment.")
-REPO_OWNER = "Vinaykiran1819"  # CHANGE THIS to your GitHub username
-REPO_NAME = "Autonomous_Incident_Response_Platform_MCP" # CHANGE THIS to a repo you own
+# Safety Check: Warn if token is missing
+if not GITHUB_TOKEN:
+    raise ValueError("❌ Error: GITHUB_TOKEN not found. Did you create the .env file?")
 
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
@@ -25,13 +25,9 @@ HEADERS = {
 
 @mcp.tool()
 def create_incident_issue(title: str, description: str, severity: str = "High") -> str:
-    """
-    Creates a GitHub Issue to report an incident. 
-    Use this immediately after detecting or resolving a critical failure.
-    """
+    """Creates a GitHub Issue to report an incident."""
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/issues"
     
-    # Add severity label to the body
     body = f"**Severity:** {severity}\n\n{description}\n\n_Reported by Autonomous AI Agent_"
     
     data = {
@@ -43,19 +39,15 @@ def create_incident_issue(title: str, description: str, severity: str = "High") 
     try:
         response = requests.post(url, headers=HEADERS, json=data)
         if response.status_code == 201:
-            issue_data = response.json()
-            return f"✅ Incident Report Created: {issue_data['html_url']}"
+            return f"✅ Incident Report Created: {response.json()['html_url']}"
         else:
-            return f"❌ Failed to create issue: {response.status_code} - {response.text}"
+            return f"❌ Failed to create issue ({response.status_code}): {response.text}"
     except Exception as e:
         return f"Error: {str(e)}"
 
 @mcp.tool()
 def check_recent_commits(limit: int = 5) -> str:
-    """
-    Fetches the last N commits.
-    Use this to see if a recent code change might have caused the crash.
-    """
+    """Fetches the last N commits."""
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/commits?per_page={limit}"
     
     try:
