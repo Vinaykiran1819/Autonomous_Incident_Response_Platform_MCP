@@ -2,7 +2,6 @@ from fastapi import FastAPI
 import logging
 import random
 import os
-import time
 
 app = FastAPI()
 

@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import Docker from "dockerode";
 import { z } from "zod";
-import os from "os";
+import * as os from "os";
 
 // =============================================================================
 // 1. WINDOWS COMPATIBILITY FIX

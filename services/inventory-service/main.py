@@ -21,7 +21,7 @@ def home():
 
 @app.get("/sync")
 def sync_stock():
-    # Simulate a "Database Lock" (High Latency)
+    # Simulate high latency
     delay = random.uniform(0.1, 2.0)
     time.sleep(delay)
     
@@ -29,4 +29,4 @@ def sync_stock():
         logging.warning(f'{{"event": "slow_query", "duration_ms": {delay*1000}, "table": "products"}}')
     
     logging.info('{"event": "stock_updated", "items": 50}')
-    return {"status": "synced", "latency": delay}
+    return {"status": "synced", "latency": delay}   

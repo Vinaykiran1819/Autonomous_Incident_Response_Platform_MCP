@@ -214,3 +214,5 @@ npm-debug.log
 # Project specific
 shared-volume/
 *.log
+
+.env
