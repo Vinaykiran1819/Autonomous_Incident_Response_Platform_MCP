@@ -66,5 +66,29 @@ def check_recent_commits(limit: int = 5) -> str:
     except Exception as e:
         return f"Error: {str(e)}"
 
+@mcp.tool()
+def get_file_content(file_path: str) -> str:
+    """
+    Fetches the actual code/content of a file from the repository.
+    Use this to audit code logic or check configuration files.
+    """
+    url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{file_path}"
+    
+    try:
+        response = requests.get(url, headers=HEADERS)
+        if response.status_code == 200:
+            data = response.json()
+            # GitHub returns file content as a base64 encoded string
+            # We must decode it to plain text for the AI to read it
+            file_bytes = base64.b64decode(data['content'])
+            content = file_bytes.decode('utf-8')
+            return f"--- Content of {file_path} ---\n\n{content}"
+        elif response.status_code == 404:
+            return f"❌ Error: File '{file_path}' not found in the repository."
+        else:
+            return f"❌ Failed to fetch file: {response.text}"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
 if __name__ == "__main__":
     mcp.run()
